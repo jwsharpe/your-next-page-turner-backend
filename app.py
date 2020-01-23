@@ -5,6 +5,9 @@ import pandas as pd
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
 from flask_cors import CORS
+
+from fuzzywuzzy import fuzz
+
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 
@@ -35,7 +38,7 @@ cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
 @app.route("/query", methods=['POST'])
 def handleSearch():
     query = request.json['query']
-
+    return return_query_pull(query).to_json(orient='records')
     # input: < string > page number
     # output: < [<json>] > list of books. LIMIT = 50
 
@@ -62,6 +65,18 @@ def returnTitle():
     list_of_recs = recommendations(
         text, data, cosine_sim, filter_args=(None, None))
     return list_of_recs.to_json(orient='records')
+
+
+def return_query_pull(query):
+    ''' Takes in a string and returns a df with 50 most similar titles '''
+    matching_books = []
+    for k, v in data.iterrows():
+        title = v.titles
+        ratio_set = fuzz.token_set_ratio(title.lower(), query.lower())
+        if ratio_set > 70:
+            matching_books.append(k)
+
+    return data.iloc[matching_books]
 
 
 def recommendations(title, df, sim_matrix, filter_args=(None, None), list_length=11, suppress=True):
