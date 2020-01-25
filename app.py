@@ -10,7 +10,8 @@ from fuzzywuzzy import fuzz
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
-
+from scipy import sparse
+from sys import getsizeof
 
 app = FlaskAPI(__name__)
 CORS(app)
@@ -18,7 +19,7 @@ CORS(app)
 # load in data and transform as needed
 
 # data = pd.read_json('updating_df.json',orient='records') # later
-data = pd.read_json('goodreads_updated.json', orient='index')
+data = pd.read_json('last_50.json', orient='index')
 
 # data = pd.read_json('goodreads_updated.json', orient='index')
 # james_data = data[['id', 'authors', 'titles', 'description', 'img', 'genre']]
@@ -29,8 +30,6 @@ tf = TfidfVectorizer(analyzer='word', ngram_range=(1, 2),
                      min_df=0, stop_words='english')
 tfidf_matrix = tf.fit_transform(data['bag_of_words'])
 cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
-
-# routing information
 
 
 # input: < string > search query
@@ -80,23 +79,6 @@ def return_query_pull(query):
 
 
 def recommendations(title, df, sim_matrix, filter_args=(None, None), list_length=11, suppress=True):
-    '''
-    Return recommendations based on a "bag of words" comprised of book author, genres and description.
-    Function takes in title, list length, a dataframe, a similarity matrix and an option to add filters or suppress output.
-    filter_args is (length, popularity) : 
-
-    length options are:
-        long: >= 350
-        short: < 350
-
-    popularity options are:
-        deep cut: < 27,000
-        well known: between 80,000 and 27,000
-        super popular: > 80,000
-
-    See filter_df() for further workings on this function.
-    '''
-
     recommended_books = []
 
     # creating a Series for the movie titles so they are associated to an ordered numerical list
