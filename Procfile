@@ -1,1 +1,1 @@
-start gunicorn app.py
+start gunicorn app:app
