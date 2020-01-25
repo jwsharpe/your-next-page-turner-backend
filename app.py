@@ -10,8 +10,6 @@ from fuzzywuzzy import fuzz
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
-from scipy import sparse
-from sys import getsizeof
 
 app = FlaskAPI(__name__)
 CORS(app)
@@ -19,7 +17,7 @@ CORS(app)
 # load in data and transform as needed
 
 # data = pd.read_json('updating_df.json',orient='records') # later
-data = pd.read_json('last_50.json', orient='index')
+data = pd.read_json('random_200.json')
 
 # data = pd.read_json('goodreads_updated.json', orient='index')
 # james_data = data[['id', 'authors', 'titles', 'description', 'img', 'genre']]
@@ -53,7 +51,7 @@ def getBooks(page_num):
 # output: < [<json>] > list of first 50 books.
 @app.route("/books", methods=['GET'])
 def notes_list():
-    return data.iloc[0:5].to_json(orient='records')
+    return data.iloc[0:50].to_json(orient='records')
 
 
 @app.route('/books', methods=['POST'])
